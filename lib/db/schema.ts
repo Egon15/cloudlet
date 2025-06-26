@@ -28,17 +28,12 @@ export const files = pgTable("files", {
   // File/Folder Flags
   isFolder: boolean("is_folder").default(false).notNull(),
   isStarred: boolean("is_starred").default(false).notNull(),
-  isTrash: boolean("is_trash").default(false).notNull(),
+  isTrash: boolean("is_trash").default(false).notNull(), // This is correctly defined
 
   // Timestamps
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
-
-/*
-    parent: Each file/folder can have one parent folder
-    children: Each folder can have many child files.folder
-    */
 
 export const filesRelations = relations(files, ({ one, many }) => ({
   // relationship to child file/folder - There could be many files inside the folder
@@ -49,7 +44,6 @@ export const filesRelations = relations(files, ({ one, many }) => ({
   children: many(files),
 }));
 
-// Type definitions
-
-export const File = typeof files.$inferSelect;
-export const NewFile = typeof files.$inferInsert;
+// Type definitions - THE CRITICAL CHANGE IS HERE
+export type FileType = typeof files.$inferSelect; // <--- Changed from 'export const File' to 'export type FileType'
+export type NewFileType = typeof files.$inferInsert; // <--- Changed for consistency
