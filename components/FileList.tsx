@@ -17,6 +17,7 @@ import FileLoadingState from "@/components/FileLoadingState";
 import FileTabs from "@/components/FileTabs";
 import FolderNavigation from "@/components/FolderNavigation";
 import FileActionButtons from "@/components/FileActionButtons";
+import { log } from "console";
 
 export default function FileList({
   userId,
@@ -75,21 +76,207 @@ export default function FileList({
   );
 
   //   // Handler examples: starring, trashing, deleting & emptying, downloads...
-  //   const handleStarFile = async (fileId: string) => {
-  //     /* ... */
-  //   };
-  //   const handleTrashFile = async (fileId: string) => {
-  //     /* ... */
-  //   };
-  //   const handleDeleteFile = async (fileId: string) => {
-  //     /* ... */
-  //   };
-  //   const handleEmptyTrash = async () => {
-  //     /* ... */
-  //   };
-  //   const handleDownloadFile = async (file: FileType) => {
-  //     /* ... */
-  //   };
+  const handleStarFile = async (fileId: string) => {
+    try {
+      const response = await fetch(`/api/files/${fileId}/star`, {
+        method: "PATCH",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update star status.");
+      }
+
+      // Update local state
+      let updatedFile: FileType | undefined;
+      setFiles((prevFiles) =>
+        prevFiles.map((file) => {
+          if (file.id === fileId) {
+            updatedFile = { ...file, isStarred: !file.isStarred };
+            return updatedFile;
+          }
+          return file;
+        })
+      );
+
+      // Show Sonner toast
+      if (updatedFile) {
+        toast.success(
+          updatedFile.isStarred ? "Added to Starred" : "Removed from Starred",
+          {
+            description: `"${updatedFile.name}" has been ${
+              updatedFile.isStarred ? "added to" : "removed from"
+            } your starred files.`,
+          }
+        );
+      }
+    } catch (error) {
+      console.error("Error starring file:", error);
+      toast.error("Action Failed", {
+        description: "We couldn't update the star status. Please try again.",
+      });
+    }
+  };
+
+  const handleTrashFile = async (fileId: string) => {
+    try {
+      const response = await fetch(`/api/files/${fileId}/trash`, {
+        method: "PATCH",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update file status.");
+      }
+
+      const responseData = await response.json(); // Assuming API returns { isTrash: boolean }
+
+      // Update local state
+      let updatedFile: FileType | undefined;
+      setFiles((prevFiles) =>
+        prevFiles.map((file) => {
+          if (file.id === fileId) {
+            updatedFile = { ...file, isTrash: responseData.isTrash };
+            return updatedFile;
+          }
+          return file;
+        })
+      );
+
+      // Show Sonner toast
+      if (updatedFile) {
+        toast.success(
+          updatedFile.isTrash ? "Moved to Trash" : "Restored from Trash",
+          {
+            description: `"${updatedFile.name}" has been ${
+              updatedFile.isTrash ? "moved to trash" : "restored"
+            }.`,
+          }
+        );
+      }
+    } catch (error) {
+      console.error("Error trashing file:", error);
+      toast.error("Action Failed", {
+        description: "We couldn't update the file status. Please try again.",
+      });
+    }
+  };
+
+  const handleDeleteFile = async (fileId: string) => {
+    try {
+      // Store file info before deletion for the toast message
+      const fileToDelete = files.find((f) => f.id === fileId);
+      const fileName = fileToDelete?.name || "File";
+
+      // Send delete request
+      const response = await fetch(`/api/files/${fileId}/delete`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete file.");
+      }
+
+      // Remove file from local state
+      setFiles((prevFiles) => prevFiles.filter((file) => file.id !== fileId));
+
+      // Show success Sonner toast
+      toast.success("File Permanently Deleted", {
+        description: `"${fileName}" has been permanently removed.`,
+      });
+
+      // Close modal if it was open
+      setDeleteModalOpen(false);
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      toast.error("Deletion Failed", {
+        description: "We couldn't delete the file. Please try again later.",
+      });
+    }
+  };
+
+  const handleEmptyTrash = async () => {
+    try {
+      const response = await fetch(`/api/files/empty-trash`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to empty trash.");
+      }
+
+      // Remove all trashed files from local state
+      setFiles((prevFiles) => prevFiles.filter((file) => !file.isTrash));
+
+      // Show Sonner toast
+      toast.success("Trash Emptied", {
+        description: `All ${trashCount} items have been permanently deleted.`,
+      });
+
+      // Close modal
+      setEmptyTrashModalOpen(false);
+    } catch (error) {
+      console.error("Error emptying trash:", error);
+      toast.error("Action Failed", {
+        description: "We couldn't empty the trash. Please try again later.",
+      });
+    }
+  };
+
+  // Add this function to handle file downloads
+  const handleDownloadFile = async (file: FileType) => {
+    const loadingToastId = toast.loading("Preparing Download", {
+      description: `Getting "${file.name}" ready for download...`,
+    });
+
+    try {
+      let downloadUrl: string;
+
+      // For images, use the ImageKit URL directly with optimized settings
+      if (file.type.startsWith("image/")) {
+        // Create a download-optimized URL with ImageKit
+        // Using high quality and original dimensions for downloads
+        // Ensure NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT is correctly defined in your .env
+        downloadUrl = `${process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT}/tr:q-100,orig-true/${file.path}`;
+      } else {
+        // For other file types, use the fileUrl directly
+        downloadUrl = file.fileUrl;
+      }
+
+      const response = await fetch(downloadUrl);
+      if (!response.ok) {
+        throw new Error(`Failed to download file: ${response.statusText}`);
+      }
+
+      // Get the blob data
+      const blob = await response.blob();
+
+      // Create a download link
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = file.name; // Suggests a filename for download
+      document.body.appendChild(link); // Temporarily append to trigger download
+
+      // Trigger download
+      link.click();
+
+      // Clean up
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+
+      // Update loading toast to success
+      toast.success("Download Ready", {
+        id: loadingToastId, // Close the specific loading toast
+        description: `"${file.name}" has finished downloading.`,
+      });
+    } catch (error) {
+      console.error("Error downloading file:", error);
+      toast.error("Download Failed", {
+        id: loadingToastId, // Close the specific loading toast
+        description: "We couldn't download the file. Please try again later.",
+      });
+    }
+  };
 
   if (loading) return <FileLoadingState />;
 
@@ -109,8 +296,8 @@ export default function FileList({
           navigateUp={() => {
             /* ... */
           }}
-          navigateToPathFolder={(i) => {
-            /* ... */
+          navigateToPathFolder={(index: number) => {
+            console.log("Navigating to folder at index: ", index);
           }}
         />
       )}
@@ -191,7 +378,11 @@ export default function FileList({
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell onClick={(e: Event) => e.stopPropagation()}>
+                  <TableCell
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                  >
                     <FileActions
                       file={file}
                       onStar={handleStarFile}
