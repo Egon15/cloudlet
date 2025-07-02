@@ -28,32 +28,6 @@ It allows authenticated users to upload, preview, and organize images and text f
 | ShadCN UI         | Pre-built accessible components    |
 | Lucide Icons      | Iconography                        |
 
-## Run Locally
-
-Clone the project
-
-```bash
-    git clone https://github.com/Egon15/cloudlet.git
-```
-
-Go to the project directory
-
-```bash
-    cd cloudlet
-```
-
-Install dependencies
-
-```bash
-    npm install
-```
-
-Start the server
-
-```bash
-    npm run dev
-```
-
 
 ## Screenshots
 
