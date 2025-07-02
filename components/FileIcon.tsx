@@ -25,6 +25,8 @@ export default function FileIcon({ file }: FileIconProps) {
         // Shadcn UI doesn't have a direct "Image Thumbnail" component, so this custom div is appropriate.
         <div className="h-12 w-12 relative overflow-hidden rounded">
           <IKImage
+            publicKey={process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY!}
+            urlEndpoint={process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT!}
             path={file.path}
             // ImageKit transformations for a small thumbnail
             transformation={[

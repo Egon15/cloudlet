@@ -57,9 +57,9 @@ export function ConfirmationModal({
           <AlertDialogDescription className="text-center">
             {description}
             {warningMessage && (
-              <p className="mt-2 text-sm text-red-600 font-medium">
+              <span className="mt-2 text-sm text-red-600 font-medium">
                 {warningMessage}
-              </p>
+              </span>
             )}
           </AlertDialogDescription>
         </AlertDialogHeader>

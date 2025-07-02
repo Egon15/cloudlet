@@ -4,7 +4,7 @@ import DashboardContent from "@/components/DashboardContent";
 import { CloudUpload } from "lucide-react";
 // import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-// import Navbar from "@/components/Navbar";
+import Navbar from "@/components/Navbar";
 
 export default async function Dashboard() {
   const { userId } = await auth();
