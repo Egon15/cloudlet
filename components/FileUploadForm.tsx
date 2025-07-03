@@ -1,3 +1,6 @@
+// FileUploadForm allows users to upload image files (max 5MB) or create new folders within the current directory.
+// It handles drag-and-drop uploads, progress tracking, and form-based folder creation with real-time feedback.
+
 "use client";
 
 import { useState, useRef } from "react";

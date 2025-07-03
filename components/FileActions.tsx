@@ -1,3 +1,6 @@
+// FileActions component renders action buttons (Download, Star, Trash, Restore, Delete) for each file.
+// Buttons shown depend on the file's properties like isTrash and isFolder.
+
 "use client";
 
 import { Star, Trash, X, ArrowUpFromLine, Download } from "lucide-react";

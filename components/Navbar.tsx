@@ -1,3 +1,6 @@
+// Navbar component manages top navigation with dynamic links based on auth state.
+// Includes desktop and mobile menu, user avatar, sign in/out, and responsive behavior.
+
 "use client";
 
 import { useClerk, SignedIn, SignedOut } from "@clerk/nextjs";

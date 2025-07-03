@@ -1,3 +1,11 @@
+/*
+The DashboardContent component is the main user interface for a logged-in user’s dashboard. It displays a personalized greeting and provides two main tabs: one for managing files and another for viewing the user’s profile.
+
+In the "My Files" tab, users can upload new files and view a list of their existing files. When a file is uploaded successfully, the file list is refreshed automatically. Users can also navigate into folders.
+
+In the "Profile" tab, the user’s account details are shown.
+*/
+
 "use client";
 
 import { useState, useCallback, useEffect } from "react";

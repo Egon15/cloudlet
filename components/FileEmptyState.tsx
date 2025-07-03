@@ -15,23 +15,14 @@ interface FileEmptyStateProps {
 export default function FileEmptyState({ activeTab }: FileEmptyStateProps) {
   return (
     <Card className="border border-input bg-background">
-      {" "}
-      {/* Adjusted border and background for Shadcn UI theme */}
       <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-        {" "}
-        {/* Centering content */}
-        <File className="h-16 w-16 mx-auto text-primary/50 mb-6" />{" "}
-        {/* Icon remains the same */}
+        <File className="h-16 w-16 mx-auto text-primary/50 mb-6" />
         <CardTitle className="text-xl font-medium mb-2">
-          {" "}
-          {/* CardTitle for the main heading */}
           {activeTab === "all" && "No files available"}
           {activeTab === "starred" && "No starred files"}
           {activeTab === "trash" && "Trash is empty"}
         </CardTitle>
         <CardDescription className="mt-2 max-w-md mx-auto text-muted-foreground">
-          {" "}
-          {/* CardDescription for the descriptive text */}
           {activeTab === "all" &&
             "Upload your first file to get started with your personal cloud storage"}
           {activeTab === "starred" &&

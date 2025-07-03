@@ -1,3 +1,8 @@
+/*
+A reusable confirmation dialog built with shadcn/ui's AlertDialog.
+It displays a title, description, optional warning message, and icon, along with customizable confirm and cancel buttons.
+*/
+
 import React from "react";
 import {
   AlertDialog,

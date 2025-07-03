@@ -1,3 +1,6 @@
+// UserProfile component displays the signed-in user's profile with avatar, name, email, and account status.
+// Includes loading and signed-out fallback UI, sign-out functionality, and visual badges for role and verification.
+
 "use client";
 
 import { useUser, useClerk } from "@clerk/nextjs";

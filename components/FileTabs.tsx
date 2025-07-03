@@ -1,11 +1,13 @@
+// FileTabs provides a tabbed interface to switch between "All Files", "Starred", and "Trash" views.
+// It displays file counts using badges and manages active tab state for file filtering.
+
 "use client";
 
 import { File, Star, Trash } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Assuming Shadcn UI tabs path
-import { cn } from "@/lib/utils"; // For utility classes like conditional styling
-import type { FileType } from "@/lib/db/schema"; // Ensure this path is correct
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
+import type { FileType } from "@/lib/db/schema";
 
-// A simple Badge-like component for Shadcn UI, as it doesn't have one built-in
 const Badge = ({
   children,
   className,
@@ -96,11 +98,6 @@ export default function FileTabs({
           </div>
         </TabsTrigger>
       </TabsList>
-      {/* You would typically have TabsContent for each tab, but the original code didn't provide content for them. */}
-      {/* For example: */}
-      {/* <TabsContent value="all">Content for All Files</TabsContent> */}
-      {/* <TabsContent value="starred">Content for Starred Files</TabsContent> */}
-      {/* <TabsContent value="trash">Content for Trash</TabsContent> */}
     </Tabs>
   );
 }

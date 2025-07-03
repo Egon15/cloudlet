@@ -73,7 +73,7 @@ export default function FileList({
         throw new Error("Failed to update star status.");
       }
 
-      // Optimistically update UI
+      // Update UI
       setFiles((prevFiles) =>
         prevFiles.map((file) =>
           file.id === fileId ? { ...file, isStarred: !file.isStarred } : file
@@ -274,9 +274,6 @@ export default function FileList({
     setCurrentFolder(file.id);
     onFolderChange(file.id);
   };
-
-  // FILE ACTIONS (star, trash, delete, download)
-  // … (keep your existing handlers: handleStarFile, handleTrashFile, handleDeleteFile, handleEmptyTrash, handleDownloadFile)
 
   if (loading) return <FileLoadingState />;
 

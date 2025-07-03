@@ -1,8 +1,11 @@
+// FolderNavigation displays the current folder path as breadcrumb buttons and allows navigation within nested folders.
+// It supports moving up one level or directly jumping to a folder in the path.
+
 "use client";
 
 import { ArrowUpFromLine } from "lucide-react";
-import { Button } from "@/components/ui/button"; // Shadcn UI Button
-import { cn } from "@/lib/utils"; // For utility classes like conditional styling
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface FolderNavigationProps {
   folderPath: Array<{ id: string; name: string }>;
@@ -17,27 +20,24 @@ export default function FolderNavigation({
 }: FolderNavigationProps) {
   return (
     <div className="flex flex-wrap items-center gap-1 text-sm overflow-x-auto pb-2">
-      {" "}
-      {/* Adjusted gap */}
       <Button
-        variant="ghost" // Shadcn equivalent for 'flat'
-        size="icon" // Shadcn size for icon-only buttons
+        variant="ghost"
+        size="icon"
         onClick={navigateUp}
-        disabled={folderPath.length === 0} // 'isDisabled' becomes 'disabled'
+        disabled={folderPath.length === 0}
       >
         <ArrowUpFromLine className="h-4 w-4" />
-        <span className="sr-only">Navigate Up</span>{" "}
-        {/* Added for accessibility */}
+        <span className="sr-only">Navigate Up</span>
       </Button>
       <Button
-        variant="ghost" // Shadcn equivalent for 'flat'
+        variant="ghost"
         size="sm"
         onClick={() => navigateToPathFolder(-1)}
         className={cn(
-          "px-2 py-1 h-auto", // Adjust padding and height for better fit
+          "px-2 py-1 h-auto",
           folderPath.length === 0
             ? "font-bold text-foreground"
-            : "text-muted-foreground" // Active home link
+            : "text-muted-foreground"
         )}
       >
         Home
@@ -45,16 +45,15 @@ export default function FolderNavigation({
       {folderPath.map((folder, index) => (
         <div key={folder.id} className="flex items-center">
           <span className="mx-1 text-muted-foreground">/</span>{" "}
-          {/* Adjusted text color */}
           <Button
-            variant="ghost" // Shadcn equivalent for 'flat'
+            variant="ghost"
             size="sm"
             onClick={() => navigateToPathFolder(index)}
             className={cn(
-              "px-2 py-1 h-auto text-ellipsis overflow-hidden max-w-[150px]", // Adjust padding and height
+              "px-2 py-1 h-auto text-ellipsis overflow-hidden max-w-[150px]",
               index === folderPath.length - 1
                 ? "font-bold text-foreground"
-                : "text-muted-foreground" // Active folder link
+                : "text-muted-foreground"
             )}
             title={folder.name}
           >
