@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+# Cloudlet
 
-First, run the development server:
+**Cloudlet** is a modern, minimal cloud storage application built with Next.js.  
+It allows authenticated users to upload, preview, and organize images and text files — designed with performance, clarity, and simplicity in mind.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- 🔐 Secure authentication via Clerk
+- ☁️ Upload images and text files
+- 🖼️ Optimized image previews via ImageKit CDN
+- 🗂️ Organized dashboard with file/folder structure
+- 🧠 Route protection with middleware
+- ⚙️ Drizzle ORM integration with Postgres
+- 🌀 Minimal, responsive UI using Tailwind CSS and ShadCN components
+## Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Tool/Library     | Purpose                            |
+|------------------|-------------------------------------|
+| Next.js (App Router) | Fullstack React framework        |
+| TypeScript        | Type safety                        |
+| Tailwind CSS      | Utility-first styling               |
+| Drizzle ORM       | Type-safe database queries         |
+| Neon Postgres     | Serverless Postgres DB             |
+| Clerk             | Authentication & user sessions     |
+| ImageKit          | File CDN + image transformation    |
+| ShadCN UI         | Pre-built accessible components    |
+| Lucide Icons      | Iconography                        |
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+## Screenshots
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## Acknowledgements
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+ - [Next.js](https://nextjs.org/docs) – Fullstack React framework powering the app
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+ - [Clerk](https://clerk.com/docs) – Authentication and user session management
+
+ - [ImageKit](https://imagekit.io/docs) – Image CDN, upload API, and real-time transformations
+
+ - [Drizzle ORM](https://orm.drizzle.team/docs/overview) – Type-safe SQL ORM for TypeScript
+
+ - [Neon](https://neon.com/docs/introduction) – Serverless Postgres with branching and edge support
+
+ - [ShadCN UI](https://ui.shadcn.com/docs/components) – Accessible, modern UI components built on Radix
+
+ - [Lucide Icons](https://lucide.dev/icons/) – Beautiful, open-source icon set
+
+ - [Tailwind CSS](https://tailwindcss.com/docs/installation/framework-guides/nextjs) – Utility-first CSS framework
