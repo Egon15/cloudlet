@@ -6,7 +6,7 @@ import { eq, and } from "drizzle-orm";
 import ImageKit from "imagekit";
 import { v4 as uuidv4 } from "uuid";
 
-// Initialize ImageKit with your credentials
+// Initialize ImageKit with credentials
 const imagekit = new ImageKit({
   publicKey: process.env.IMAGEKIT_PUBLIC_KEY || "",
   privateKey: process.env.IMAGEKIT_PRIVATE_KEY || "",
@@ -15,11 +15,13 @@ const imagekit = new ImageKit({
 
 export async function POST(request: NextRequest) {
   try {
+    // Authenticate user
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Get form-data
     const formData = await request.formData();
     const file = formData.get("file");
     if (!(file instanceof Blob)) {
@@ -29,7 +31,7 @@ export async function POST(request: NextRequest) {
     const formUserId = formData.get("userId") as string;
     const parentId = (formData.get("parentId") as string) || null;
 
-    // Verify the user is uploading to their own account
+    // Ensure the user uploading the file owns the account
     if (formUserId !== userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -38,7 +40,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    // Check if parent folder exists if parentId is provided
+    // If a parent folder is specified, verify it exists and belongs to the user
     if (parentId) {
       const [parentFolder] = await db
         .select()
@@ -59,7 +61,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Only allow image uploads
+    // Only allow image and PDF uploads
     if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
       return NextResponse.json(
         { error: "Only image files are supported" },
@@ -67,18 +69,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Convert file to buffer for upload
     const buffer = await file.arrayBuffer();
     const fileBuffer = Buffer.from(buffer);
 
+    // Generate a unique filename using UUID
     const originalFilename = file.name;
     const fileExtension = originalFilename.split(".").pop() || "";
     const uniqueFilename = `${uuidv4()}.${fileExtension}`;
 
-    // Create folder path based on parent folder if exists
+    // Define folder path based on parent folder or root
     const folderPath = parentId
-      ? `/droply/${userId}/folders/${parentId}`
-      : `/droply/${userId}`;
+      ? `/cloudlet/${userId}/folders/${parentId}`
+      : `/cloudlet/${userId}`;
 
+    // Upload file to ImageKit
     const uploadResponse = await imagekit.upload({
       file: fileBuffer,
       fileName: uniqueFilename,
@@ -86,6 +91,7 @@ export async function POST(request: NextRequest) {
       useUniqueFileName: false,
     });
 
+    // Prepare file metadata to insert into the database
     const fileData = {
       name: originalFilename,
       path: uploadResponse.filePath,
@@ -100,6 +106,7 @@ export async function POST(request: NextRequest) {
       isTrash: false,
     };
 
+    // Store the uploaded file in the database
     const [newFile] = await db.insert(files).values(fileData).returning();
 
     return NextResponse.json(newFile);

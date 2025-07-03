@@ -9,12 +9,13 @@ export async function PATCH(
   props: { params: Promise<{ fileId: string }> }
 ) {
   try {
-    // Check authentication
+    // Authenticate the user
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Extract fileId from route parameters
     const { fileId } = await props.params;
 
     if (!fileId) {
@@ -24,7 +25,7 @@ export async function PATCH(
       );
     }
 
-    // Get the current file
+    // Fetch the file that matches the user and fileId
     const [file] = await db
       .select()
       .from(files)
@@ -34,16 +35,15 @@ export async function PATCH(
       return NextResponse.json({ error: "File not found" }, { status: 404 });
     }
 
-    // Toggle the isStarred status
+    // Toggle the isStarred status and update the file
     const updatedFiles = await db
       .update(files)
       .set({ isStarred: !file.isStarred })
       .where(and(eq(files.id, fileId), eq(files.userId, userId)))
       .returning();
 
-    // Get just the file instead of an array of files
+    // Return the updated file
     const updatedFile = updatedFiles[0];
-
     return NextResponse.json(updatedFile);
   } catch (error) {
     console.error("Error starring file:", error);

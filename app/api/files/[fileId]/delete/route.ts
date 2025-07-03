@@ -5,7 +5,7 @@ import { files } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import ImageKit from "imagekit";
 
-// Initialize ImageKit with your credentials
+// Initialize ImageKit with credentials from environment variables
 const imagekit = new ImageKit({
   publicKey: process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY || "",
   privateKey: process.env.IMAGEKIT_PRIVATE_KEY || "",
@@ -17,11 +17,13 @@ export async function DELETE(
   props: { params: Promise<{ fileId: string }> }
 ) {
   try {
+    // Authenticate the user
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Extract fileId from route params
     const { fileId } = await props.params;
 
     if (!fileId) {
@@ -31,7 +33,7 @@ export async function DELETE(
       );
     }
 
-    // Get the file to be deleted
+    // Fetch the file from the database, ensuring it belongs to the user
     const [file] = await db
       .select()
       .from(files)
@@ -41,11 +43,12 @@ export async function DELETE(
       return NextResponse.json({ error: "File not found" }, { status: 404 });
     }
 
-    // Confirm that selected entity is !Folder (it is a file) and delete it
+    // If it's not a folder, try to delete from ImageKit
     if (!file.isFolder) {
       try {
         let imagekitFileId = null;
 
+        // Extract file identifier from URL or path
         if (file.fileUrl) {
           const urlWithoutQuery = file.fileUrl.split("?")[0];
           imagekitFileId = urlWithoutQuery.split("/").pop();
@@ -55,6 +58,7 @@ export async function DELETE(
           imagekitFileId = file.path.split("/").pop();
         }
 
+        // Try deleting the file from ImageKit
         if (imagekitFileId) {
           try {
             const searchResults = await imagekit.listFiles({
@@ -69,6 +73,7 @@ export async function DELETE(
             }
           } catch (searchError) {
             console.error(`Error searching for file in ImageKit:`, searchError);
+            // Attempt direct deletion if search fails
             await imagekit.deleteFile(imagekitFileId);
           }
         }
@@ -77,12 +82,13 @@ export async function DELETE(
       }
     }
 
-    // Delete file from database
+    // Delete the file record from the database
     const [deletedFile] = await db
       .delete(files)
       .where(and(eq(files.id, fileId), eq(files.userId, userId)))
       .returning();
 
+    // Return success response
     return NextResponse.json({
       success: true,
       message: "File deleted successfully",

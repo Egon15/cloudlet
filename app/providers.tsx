@@ -11,7 +11,7 @@ export interface ProvidersProps {
   themeProps?: ThemeProviderProps;
 }
 
-// Create a context for ImageKit authentication
+// Create context to expose ImageKit auth functionality
 export const ImageKitAuthContext = createContext<{
   authenticate: () => Promise<{
     signature: string;
@@ -22,9 +22,10 @@ export const ImageKitAuthContext = createContext<{
   authenticate: async () => ({ signature: "", token: "", expire: 0 }),
 });
 
+// Hook to use ImageKit authentication context
 export const useImageKitAuth = () => useContext(ImageKitAuthContext);
 
-// ImageKit authentication function
+// Authenticator function to fetch signed parameters from backend
 const authenticator = async () => {
   try {
     const response = await fetch("/api/imagekit-auth");
@@ -36,6 +37,7 @@ const authenticator = async () => {
   }
 };
 
+// Global providers: Theme + ImageKit
 export function Providers({ children, themeProps }: ProvidersProps) {
   return (
     <ImageKitProvider
@@ -43,7 +45,9 @@ export function Providers({ children, themeProps }: ProvidersProps) {
       publicKey={process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY || ""}
       urlEndpoint={process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT || ""}
     >
+      {/* Provide custom ImageKit auth context to child components */}
       <ImageKitAuthContext.Provider value={{ authenticate: authenticator }}>
+        {/* Provide theme (light/dark) support */}
         <NextThemesProvider {...themeProps}>{children}</NextThemesProvider>
       </ImageKitAuthContext.Provider>
     </ImageKitProvider>

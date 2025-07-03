@@ -7,19 +7,22 @@ import { eq, and } from "drizzle-orm";
 
 export async function POST(request: NextRequest) {
   try {
+    // Authenticate user
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Parse request body
     const body = await request.json();
     const { name, userId: bodyUserId, parentId = null } = body;
 
-    // Verify the user is creating a folder in their own account
+    // Ensure folder is being created under the user's own account
     if (bodyUserId !== userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Validate folder name
     if (!name || typeof name !== "string" || name.trim() === "") {
       return NextResponse.json(
         { error: "Folder name is required" },
@@ -27,7 +30,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if parent folder exists if parentId is provided
+    // If parentId is provided, verify the parent folder exists and is owned by the user
     if (parentId) {
       const [parentFolder] = await db
         .select()
@@ -48,11 +51,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create folder record in database
+    // Prepare new folder data
     const folderData = {
       id: uuidv4(),
       name: name.trim(),
-      path: `/folders/${userId}/${uuidv4()}`,
+      path: `/folders/${userId}/${uuidv4()}`, // virtual folder path
       size: 0,
       type: "folder",
       fileUrl: "",
@@ -64,8 +67,10 @@ export async function POST(request: NextRequest) {
       isTrash: false,
     };
 
+    // Insert new folder into the database
     const [newFolder] = await db.insert(files).values(folderData).returning();
 
+    // Return success response
     return NextResponse.json({
       success: true,
       message: "Folder created successfully",

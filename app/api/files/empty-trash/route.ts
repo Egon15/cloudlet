@@ -5,7 +5,7 @@ import { files } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import ImageKit from "imagekit";
 
-// Initializing ImageKit with credentials
+// Initialize ImageKit with environment credentials
 const imagekit = new ImageKit({
   publicKey: process.env.IMAGEKIT_PUBLIC_KEY || "",
   privateKey: process.env.IMAGEKIT_PRIVATE_KEY || "",
@@ -14,12 +14,13 @@ const imagekit = new ImageKit({
 
 export async function DELETE() {
   try {
+    // Authenticate user
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Fetch all the files that are trashed by the user
+    // Fetch all trashed files for the authenticated user
     const trashedFiles = await db
       .select()
       .from(files)
@@ -27,72 +28,71 @@ export async function DELETE() {
 
     if (trashedFiles.length === 0) {
       return NextResponse.json(
-        {
-          message: "No files trashed",
-        },
+        { message: "No files trashed" },
         { status: 200 }
       );
     }
 
-    // Empty the trash i.e. Delete the file from the ImageKit
+    // Delete non-folder files from ImageKit
     const deletePromises = trashedFiles
       .filter((file) => !file.isFolder)
       .map(async (file) => {
         try {
-          let imagekitFieldId = undefined;
+          let imagekitFileId;
 
+          // Try extracting file ID from fileUrl or fallback to path
           if (file.fileUrl) {
             const urlWithoutQuery = file.fileUrl.split("?")[0];
-            imagekitFieldId = urlWithoutQuery.split("/").pop();
+            imagekitFileId = urlWithoutQuery.split("/").pop();
           }
 
-          if (imagekitFieldId && file.path) {
-            imagekitFieldId = file.path.split("/").pop();
+          if (!imagekitFileId && file.path) {
+            imagekitFileId = file.path.split("/").pop();
           }
 
-          if (imagekitFieldId) {
+          // Attempt to find and delete the file from ImageKit
+          if (imagekitFileId) {
             try {
               const searchResults = await imagekit.listFiles({
-                name: imagekitFieldId,
+                name: imagekitFileId,
                 limit: 1,
               });
 
               if (searchResults && searchResults.length > 0) {
                 await imagekit.deleteFile(searchResults[0].name);
               } else {
-                await imagekit.deleteFile(imagekitFieldId);
+                await imagekit.deleteFile(imagekitFileId);
               }
             } catch (searchError) {
-              console.error(
-                `Error searching for the file in ImageKit:`,
-                searchError
-              );
-              await imagekit.deleteFile(imagekitFieldId);
+              console.error("ImageKit search error:", searchError);
+              // Fallback to direct delete
+              await imagekit.deleteFile(imagekitFileId);
             }
           }
         } catch (error) {
           console.error(
-            `Error deleting file ${file.id} from ImageKit: `,
+            `Failed to delete file ${file.id} from ImageKit:`,
             error
           );
         }
       });
 
-    // Wait for the deletion operation to compelete on the ImageKit side
+    // Wait for all ImageKit deletions to finish
     await Promise.allSettled(deletePromises);
 
-    // Delete all the trashed files from the database
+    // Delete all trashed files from the database
     const deletedFiles = await db
       .delete(files)
       .where(and(eq(files.userId, userId), eq(files.isTrash, true)))
       .returning();
 
+    // Respond with success and count of deleted files
     return NextResponse.json({
       success: true,
       message: `Successfully deleted ${deletedFiles.length} files from trash`,
     });
   } catch (error) {
-    console.error("Error in emptying trash-bin: ", error);
+    console.error("Error in emptying trash-bin:", error);
     return NextResponse.json(
       { error: "Failed to empty trash" },
       { status: 500 }
